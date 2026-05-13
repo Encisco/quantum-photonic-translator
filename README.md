@@ -54,28 +54,28 @@ The engine uses the **Generalized Bargmann Contraction** $(A, b, c)$ to "solder"
 > * **Reservoir:** The global $16 \times 16$ Bargmann $A$-matrix representing the persistent state of the photonic circuit. It acts as a mathematical baseline for the simulation, maintaining the state of all modes simultaneously.
 > * **Soldering:** The process of using the **Generalized Bargmann Contraction** to mathematically fuse a discrete gate’s $(A, b, c)$ triples into the global reservoir. This effectively "wires" the component’s logic into the existing circuit state.
    
-**Baseline Logic:** $(q_0, p_0, q_1, p_1)_{conj} \dots (q_0, p_0, q_1, p_1)_{phys}$
+**Baseline Logic:** **q**₀, **p**₀, **q**₁, **p**₁<sub>conj</sub> ... **q**₀, **p**₀, **q**₁, **p**₁<sub>phys</sub>
 
 | Logical Mode | Sector | Input Indices (_q,p_) | Output Indices (_q,p_) |
 | :--- | :--- | :--- | :--- |
-| **Mode 0** | Ket (Physical): $q_0,p_0$ | [4, 5] | [12, 13] |
-| **Mode 0** | Bra (Conjugate): $q_0,p_0$ | [0, 1] | [8, 9] |
-| **Mode 1** | Ket (Physical): $q_1,p_1$ | [6, 7] | [14, 15] |
-| **Mode 1** | Bra (Conjugate): $q_1,p_1$ | [2, 3] | [10, 11] |
+| **Mode 0** | Ket (Physical): **q**₀, **p**₀ | [4, 5] | [12, 13] |
+| **Mode 0** | Bra (Conjugate): **q**₀, **p**₀ | [0, 1] | [8, 9] |
+| **Mode 1** | Ket (Physical): **q**₁, **p**₁ | [6, 7] | [14, 15] |
+| **Mode 1** | Bra (Conjugate): **q**₁, **p**₁ | [2, 3] | [10, 11] |
 
 This "Sector-Separation" caused significant overhead in index tracking and was the primary source of "mode-bleed" bugs during the early development of the Svelte-Flask bridge.
 
 #### The "V2.0" Proposed Mapping: Interleaved Mode-Local Indexing
 Based on the implementation challenges documented in this PoC, a future refactor would move to **Mode-Local Mapping**. This aligns more closely with the Interleaved approach by keeping the dual-rail variables ($q$ and $p$) for a single mode in adjacent memory.
 
-**Baseline Logic:** $(q, p)_{phys} + (q, p)_{conj}$ per 4-pin block.
+**Baseline Logic:** (**q**, **p**)<sub>phys</sub> + (**q**, **p**)<sub>conj</sub> per 4-pin block.
 
 | Logical Mode | v2.0 Pin Indices (Ket-In, Bra-In, Ket-Out, Bra-Out) | Physical Coordinate Mapping |
 | :--- | :--- | :--- |
-| **Mode 0** | [0, 1, 2, 3] | $(q_0, p_0)_{phys} + (q_0, p_0)_{conj}$ |
-| **Mode 1** | [4, 5, 6, 7] | $(q_1, p_1)_{phys} + (q_1, p_1)_{conj}$ |
-| **Mode 2** | [8, 9, 10, 11] | $(q_2, p_2)_{phys} + (q_2, p_2)_{conj}$ |
-| **Mode 3** | [12, 13, 14, 15] | $(q_3, p_3)_{phys} + (q_3, p_3)_{conj}$ |
+| **Mode 0** | [0, 1, 2, 3] | (**q**₀, **p**₀)<sub>phys</sub> + (**q**₀, **p**₀)<sub>conj</sub> |
+| **Mode 1** | [4, 5, 6, 7] | (**q**₁, **p**₁)<sub>phys</sub> + (**q**₁, **p**₁)<sub>conj</sub> |
+| **Mode 2** | [8, 9, 10, 11] | (**q**₂, **p**₂)<sub>phys</sub> + (**q**₂, **p**₂)<sub>conj</sub> |
+| **Mode 3** | [12, 13, 14, 15] | (**q**₃, **p**₃)<sub>phys</sub> + (**q**₃, **p**₃)<sub>conj</sub> |
 
 **Advantages of the Refactored Model:**
 1. **Mathematical Locality:** Applying a gate to Mode $N$ only requires a slice of indices $[4N : 4N+4]$, making the `engine.py` logic agnostic to the total number of modes.
